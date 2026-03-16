@@ -11,7 +11,7 @@ tmux send-keys -t "${SESSION}:0.0" "claude --allowedTools 'Bash,Read,Write,Glob,
 
 # Pane 0.1 — Listener daemon (split horizontally, small strip at bottom)
 tmux split-window -t "${SESSION}:0" -v -l 6
-tmux send-keys -t "${SESSION}:0.1" "GSD_OBSERVER_SESSION=${SESSION} ${SCRIPTS_DIR}/listen.sh" Enter
+tmux send-keys -t "${SESSION}:0.1" "GSD_OBSERVER_SESSION=${SESSION} \"${SCRIPTS_DIR}/listen.sh\"" Enter
 
 # Focus Claude pane
 tmux select-pane -t "${SESSION}:0.0"
