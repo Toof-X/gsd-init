@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-// Node version check — syntax must be valid in Node 14+
+'use strict';
+// Node version check — must use syntax valid in Node 14+ for compatibility
 var major = parseInt(process.version.slice(1).split('.')[0], 10);
 if (major < 16) {
   process.stderr.write('gsd-init requires Node.js >= 16 (found ' + process.version + ')\n');
   process.exit(1);
 }
-
-'use strict';
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -56,12 +55,16 @@ function getSettingsLabel(settingsPath) {
 }
 
 function planInstall(tmplDir, obsRoot, projDir) {
+  var homeDir = os.homedir();
   var ops = [];
   for (var i = 0; i < TEMPLATE_FILES.length; i++) {
     var f = TEMPLATE_FILES[i];
     var dest = path.join(obsRoot, f.dst);
     var label = fs.existsSync(dest) ? '[overwrite]' : '[create]';
-    ops.push({ dest: dest, label: label, relative: '~/.claude/gsd-observer/' + f.dst });
+    var relDisplay = dest.startsWith(homeDir)
+      ? '~' + dest.slice(homeDir.length)
+      : dest;
+    ops.push({ dest: dest, label: label, relative: relDisplay });
   }
   var settingsPath = path.join(projDir, '.claude', 'settings.json');
   ops.push({ dest: settingsPath, label: getSettingsLabel(settingsPath), relative: '.claude/settings.json' });
