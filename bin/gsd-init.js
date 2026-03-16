@@ -77,7 +77,7 @@ function formatDryRun(ops) {
   for (var i = 0; i < ops.length; i++) {
     var op = ops[i];
     // Pad label to 14 chars for alignment: '[create]' is 8, '[overwrite]' is 11, '[merge]' is 7, '[skip]' is 6
-    var padded = op.label + Array(Math.max(1, 14 - op.label.length)).join(' ');
+    var padded = op.label + ' '.repeat(Math.max(1, 14 - op.label.length));
     lines.push('  ' + padded + op.relative);
   }
   return lines.join('\n');
@@ -191,10 +191,12 @@ async function run() {
   catch (e) { console.error('Error creating ' + dotClaudeDir + ': ' + e.message); process.exit(1); }
 
   // Step 3: copy templates
-  copyTemplates(TEMPLATES_DIR, OBS_ROOT);
+  try { copyTemplates(TEMPLATES_DIR, OBS_ROOT); }
+  catch (e) { console.error('Error copying templates to ' + OBS_ROOT + ': ' + e.message); process.exit(1); }
 
   // Step 4: chmod .sh files
-  chmodScripts(OBS_ROOT);
+  try { chmodScripts(OBS_ROOT); }
+  catch (e) { console.error('Error setting permissions in ' + OBS_ROOT + ': ' + e.message); process.exit(1); }
 
   // Step 5: merge settings.json
   try { mergeSettings(projDir, GSD_ENTRY); }

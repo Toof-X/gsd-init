@@ -103,6 +103,7 @@ test('output includes "Done! Next steps:" summary', () => {
 test('second run with --yes shows [overwrite] for existing files', () => {
   const output = runGsdInit(projDir, obsRoot, ['--yes']);
   assert(output.includes('[overwrite]'), 'second run should show [overwrite]');
+  assert(!output.includes('[create]'), 'second run should not show [create] for templates');
 });
 
 test('second run with --yes shows [skip] for settings.json', () => {
