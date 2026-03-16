@@ -120,10 +120,88 @@ function mergeSettings(projDir, entry) {
   data.hooks.Stop.push(entry);
   fs.writeFileSync(settingsPath, JSON.stringify(data, null, 2) + '\n');
 }
-function printSummary() {}
-function prompt(question) { return Promise.resolve(false); }
+function prompt(question) {
+  return new Promise(function(resolve) {
+    var rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(question, function(answer) {
+      rl.close();
+      resolve(answer.trim().toLowerCase() === 'y');
+    });
+  });
+}
 
-async function run() {}
+function printSummary() {
+  console.log([
+    '',
+    'Done! Next steps:',
+    '  1. Start Observer first:  ~/.claude/gsd-observer/scripts/start-observer.sh',
+    '  2. Start Worker:          ~/.claude/gsd-observer/scripts/start-worker.sh <project-dir>',
+    '  3. Run GSD in the Worker tmux pane — Observer will co-pilot automatically.',
+    '',
+    '  Observer agent prompt: ~/.claude/gsd-observer/agents/gsd-observer.md',
+    '  Verify setup:          ~/.claude/gsd-observer/scripts/verify.sh',
+    '',
+    'Teardown:',
+    '  ~/.claude/gsd-observer/scripts/teardown.sh',
+    '  (or manually: tmux kill-session -t gsd-worker && tmux kill-session -t gsd-observer &&',
+    '   rm -f /tmp/gsd-event-*.json /tmp/gsd-response-*.json /tmp/gsd-last-event-phase)',
+  ].join('\n'));
+}
+
+async function run() {
+  var args = process.argv.slice(2);
+  var skipPrompt = args.indexOf('--yes') !== -1 || args.indexOf('-y') !== -1;
+  var projDir = process.env.GSD_INIT_PROJ_DIR || process.cwd();
+
+  var ops = planInstall(TEMPLATES_DIR, OBS_ROOT, projDir);
+
+  // Abort on malformed settings.json early
+  var errOp = null;
+  for (var i = 0; i < ops.length; i++) {
+    if (ops[i].label === '[error]') { errOp = ops[i]; break; }
+  }
+  if (errOp) {
+    console.error('Error: Malformed JSON in ' + errOp.dest + ' — fix or remove it and retry.');
+    process.exit(1);
+  }
+
+  console.log(formatDryRun(ops));
+  console.log('');
+  console.log('Proceed? [y/N]');
+
+  if (!skipPrompt) {
+    var proceed = await prompt('');
+    if (!proceed) {
+      console.log('Aborted.');
+      process.exit(0);
+    }
+  }
+
+  // Step 1: create ~/.claude/gsd-observer subdirs
+  var subdirs = ['agents', 'hooks', 'scripts', 'schema'];
+  for (var j = 0; j < subdirs.length; j++) {
+    var subdir = path.join(OBS_ROOT, subdirs[j]);
+    try { mkdirpSync(subdir); }
+    catch (e) { console.error('Error creating ' + subdir + ': ' + e.message); process.exit(1); }
+  }
+
+  // Step 2: create project .claude/
+  var dotClaudeDir = path.join(projDir, '.claude');
+  try { mkdirpSync(dotClaudeDir); }
+  catch (e) { console.error('Error creating ' + dotClaudeDir + ': ' + e.message); process.exit(1); }
+
+  // Step 3: copy templates
+  copyTemplates(TEMPLATES_DIR, OBS_ROOT);
+
+  // Step 4: chmod .sh files
+  chmodScripts(OBS_ROOT);
+
+  // Step 5: merge settings.json
+  try { mergeSettings(projDir, GSD_ENTRY); }
+  catch (e) { console.error(e.message); process.exit(1); }
+
+  printSummary();
+}
 
 if (require.main === module) {
   run().catch(function(e) { console.error(e.message); process.exit(1); });
