@@ -43,9 +43,9 @@ When you receive an instruction to read an event file and respond:
    }
    ```
 
-6. Run the notify script:
+6. Run the notify script (path is provided in the wake instruction):
    ```bash
-   ~/.claude/gsd-observer/scripts/notify-worker.sh <event_id>
+   <project_dir>/.gsd/scripts/notify-worker.sh <event_id>
    ```
 
 **Rules:**

@@ -1,12 +1,18 @@
 {
   "name": "gsd-init",
-  "version": "1.0.0",
+  "version": "1.0.16",
   "description": "Set up GSD observer/worker tmux system in a project",
   "bin": {
-    "gsd-init": "bin/gsd-init.js"
+    "gsd-init": "bin/gsd.js"
   },
-  "files": ["bin", "templates", "README.md"],
-  "engines": { "node": ">=16" },
+  "files": [
+    "bin",
+    "templates",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
   "license": "MIT",
   "scripts": {
     "test": "node tests/test-plan-install.js && node tests/test-merge-settings.js && node tests/test-integration.js"

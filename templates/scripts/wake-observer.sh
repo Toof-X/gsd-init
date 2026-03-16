@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ $# -lt 3 ]; then
   echo "Usage: wake-observer.sh <event_id> <observer_session> <observer_pane>" >&2
@@ -22,7 +23,7 @@ fi
 echo "[wake-observer] Waiting for Observer pane to be ready..." >&2
 ready=0
 for i in $(seq 1 15); do
-  pane_content=$(tmux capture-pane -pt "$full_target" -l 5 2>/dev/null || echo "")
+  pane_content=$(tmux capture-pane -pt "$full_target" 2>/dev/null || echo "")
   if echo "$pane_content" | grep -qE '❯|>|\$|✓|claude'; then
     ready=1
     break
@@ -35,8 +36,10 @@ if [ "$ready" -eq 0 ]; then
 fi
 
 # Inject task into Observer pane
+# Quote the notify script path to handle spaces in SCRIPTS_DIR
+notify_cmd="'${SCRIPTS_DIR}/notify-worker.sh'"
 tmux send-keys -t "$full_target" \
-  "Read ${event_path} and respond as GSD Observer. Write response to /tmp/gsd-response-${event_id}.json then run ~/.claude/gsd-observer/scripts/notify-worker.sh ${event_id}" \
+  "Read ${event_path} and respond as GSD Observer. Write response to /tmp/gsd-response-${event_id}.json then run ${notify_cmd} ${event_id}" \
   Enter
 
 echo "[wake-observer] Observer woken for event ${event_id}" >&2
