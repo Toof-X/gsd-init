@@ -1,6 +1,6 @@
 {
   "name": "gsd-init",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "Set up GSD observer/worker tmux system in a project",
   "bin": {
     "gsd-init": "bin/gsd.js"
