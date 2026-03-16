@@ -72,10 +72,31 @@ function planInstall(tmplDir, obsRoot, projDir) {
 }
 
 // Stubs — implemented in later tasks
-function formatDryRun(ops) { return ''; }
+function formatDryRun(ops) {
+  var lines = ['gsd-init — GSD Observer/Worker setup', '', 'Files to install:'];
+  for (var i = 0; i < ops.length; i++) {
+    var op = ops[i];
+    // Pad label to 14 chars for alignment: '[create]' is 8, '[overwrite]' is 11, '[merge]' is 7, '[skip]' is 6
+    var padded = op.label + Array(Math.max(1, 14 - op.label.length)).join(' ');
+    lines.push('  ' + padded + op.relative);
+  }
+  return lines.join('\n');
+}
 function mkdirpSync(dir) { fs.mkdirSync(dir, { recursive: true }); }
-function copyTemplates(tmplDir, obsRoot) {}
-function chmodScripts(obsRoot) {}
+function copyTemplates(tmplDir, obsRoot) {
+  for (var i = 0; i < TEMPLATE_FILES.length; i++) {
+    var f = TEMPLATE_FILES[i];
+    var src = path.join(tmplDir, f.src);
+    var dest = path.join(obsRoot, f.dst);
+    mkdirpSync(path.dirname(dest));
+    fs.copyFileSync(src, dest);
+  }
+}
+function chmodScripts(obsRoot) {
+  for (var i = 0; i < SH_FILES.length; i++) {
+    fs.chmodSync(path.join(obsRoot, SH_FILES[i]), 0o755);
+  }
+}
 function mergeSettings(projDir, entry) {
   var settingsPath = path.join(projDir, '.claude', 'settings.json');
   if (!fs.existsSync(settingsPath)) {
