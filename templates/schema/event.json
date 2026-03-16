@@ -1,0 +1,18 @@
+{
+  "_comment": "Event written by gsd-stop-hook.sh. Named /tmp/gsd-event-<event_id>.json",
+  "event_id": "a3f9c1d2",
+  "event_type": "phase_complete",
+  "gsd_phase": "execute",
+  "observer_mode": "augment",
+  "context_summary": "Execute phase detected: src/auth/login.swift modified",
+  "artifacts": {
+    "plan": "/Users/user/project/.planning/phase-3/PLAN.md",
+    "research": "/Users/user/project/.planning/phase-3/RESEARCH.md",
+    "changed_files": ["src/auth/login.swift", "src/auth/session.swift"],
+    "test_results": "/tmp/gsd-test-results-a3f9c1d2.txt"
+  },
+  "worker_session": "gsd-worker",
+  "worker_pane": "gsd-worker:0.0",
+  "project_dir": "/Users/user/project",
+  "timestamp": "2026-03-16T10:00:00Z"
+}
