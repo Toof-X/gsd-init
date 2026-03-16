@@ -76,7 +76,29 @@ function formatDryRun(ops) { return ''; }
 function mkdirpSync(dir) { fs.mkdirSync(dir, { recursive: true }); }
 function copyTemplates(tmplDir, obsRoot) {}
 function chmodScripts(obsRoot) {}
-function mergeSettings(projDir, entry) {}
+function mergeSettings(projDir, entry) {
+  var settingsPath = path.join(projDir, '.claude', 'settings.json');
+  if (!fs.existsSync(settingsPath)) {
+    var newData = { hooks: { Stop: [entry] } };
+    fs.writeFileSync(settingsPath, JSON.stringify(newData, null, 2) + '\n');
+    return;
+  }
+  var raw = fs.readFileSync(settingsPath, 'utf8');
+  var data;
+  try { data = JSON.parse(raw); }
+  catch (e) { throw new Error('Malformed JSON in ' + settingsPath + ': ' + e.message); }
+
+  var stopArr = (data.hooks && data.hooks.Stop) ? data.hooks.Stop : [];
+  var alreadyRegistered = stopArr.some(function(e) {
+    return JSON.stringify(e).includes('gsd-stop-hook.sh');
+  });
+  if (alreadyRegistered) return;
+
+  if (!data.hooks) data.hooks = {};
+  if (!data.hooks.Stop) data.hooks.Stop = [];
+  data.hooks.Stop.push(entry);
+  fs.writeFileSync(settingsPath, JSON.stringify(data, null, 2) + '\n');
+}
 function printSummary() {}
 function prompt(question) { return Promise.resolve(false); }
 
